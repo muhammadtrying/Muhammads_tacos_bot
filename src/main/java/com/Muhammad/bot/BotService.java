@@ -89,7 +89,8 @@ public class BotService {
         sendMessage.replyMarkup(new ReplyKeyboardRemove());
 
         sendMessage.replyMarkup(BotUtils.generateClothesBtns(telegramUser));
-        MyBot.telegramBot.execute(sendMessage);
+        SendResponse execute = MyBot.telegramBot.execute(sendMessage);
+        DB.deletedMessages.add(execute.message().messageId());
     }
 
     public static void showCategoryConsumables(TelegramUser telegramUser) {
@@ -102,7 +103,8 @@ public class BotService {
         sendMessage.replyMarkup(new ReplyKeyboardRemove());
 
         sendMessage.replyMarkup(BotUtils.generateConsumablesBtns(telegramUser));
-        MyBot.telegramBot.execute(sendMessage);
+        SendResponse execute = MyBot.telegramBot.execute(sendMessage);
+        DB.deletedMessages.add(execute.message().messageId());
     }
 
     public static void showCategoryDrinks(TelegramUser telegramUser) {
@@ -113,7 +115,8 @@ public class BotService {
 
         sendMessage.replyMarkup(new ReplyKeyboardRemove());
         sendMessage.replyMarkup(BotUtils.generateDrinksBtns(telegramUser));
-        MyBot.telegramBot.execute(sendMessage);
+        SendResponse execute = MyBot.telegramBot.execute(sendMessage);
+        DB.deletedMessages.add(execute.message().messageId());
     }
 
     public static void showCategorySnacks(TelegramUser telegramUser) {
@@ -124,7 +127,8 @@ public class BotService {
 
         sendMessage.replyMarkup(new ReplyKeyboardRemove());
         sendMessage.replyMarkup(BotUtils.generateSnacksBtns(telegramUser));
-        MyBot.telegramBot.execute(sendMessage);
+        SendResponse execute = MyBot.telegramBot.execute(sendMessage);
+        DB.deletedMessages.add(execute.message().messageId());
     }
 
     public static void showProductJumper(TelegramUser telegramUser) {

@@ -63,11 +63,8 @@ public class MyBot {
 
                 // showing products
                 else if ( telegramUser.checkState(TelegramState.SHOW_PRODUCTS) ) {
-                    showProducts(text, telegramUser);
-                } else if ( telegramUser.checkState(TelegramState.ADDED_BASKET) ) {
-
+                    showProducts(text, telegramUser, message);
                 }
-
 
             } else if ( message.contact() != null ) {
                 Contact contact = message.contact();
@@ -91,12 +88,15 @@ public class MyBot {
 
         if ( telegramUser.checkState(TelegramState.SELECT_LANG) ) {
             BotService.acceptLanguageAskContact(telegramUser, callbackQuery);
+        } else if ( telegramUser.checkState(TelegramState.ADDED_BASKET) ) {
+
         } else {
             BotService.dealWithEachProduct(telegramUser, callbackQuery);
         }
     }
 
     private void showCategories(String text, TelegramUser telegramUser, Message message) {
+        DB.deletedMessages.add(message.messageId());
         BotService.clearMessages(telegramUser);
         if ( text.equals(telegramUser.getText("CLOTHES")) ) {
             BotService.showCategoryClothes(telegramUser);
@@ -117,7 +117,10 @@ public class MyBot {
         telegramUser.setTelegramState(TelegramState.SHOW_PRODUCTS);
     }
 
-    public void showProducts(String text, TelegramUser telegramUser) {
+    public void showProducts(String text, TelegramUser telegramUser, Message message) {
+        telegramUser.setCounter(0);
+        DB.deletedMessages.add(message.messageId());
+        BotService.clearMessages(telegramUser);
 
         if ( text.equals(telegramUser.getText("JUMPER")) ) {
             BotService.showProductJumper(telegramUser);
