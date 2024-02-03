@@ -1,8 +1,6 @@
 package com.Muhammad.bot;
 
 import com.Muhammad.db.DB;
-import com.Muhammad.entity.OrderProduct;
-import com.Muhammad.entity.Product;
 import com.Muhammad.entity.TelegramUser;
 import com.Muhammad.enums.Language;
 import com.Muhammad.enums.TelegramState;
@@ -19,11 +17,8 @@ import com.pengrad.telegrambot.response.SendResponse;
 
 import java.io.File;
 import java.util.List;
-import java.util.UUID;
 
 public class BotService {
-    public static MyBot myBot = new MyBot();
-
     public static void acceptStartAskLanguage(Message message, TelegramUser telegramUser) {
         SendMessage sendMessage = new SendMessage(message.chat().id(), """
          Assalomu aleykum. Botga hush kelibsiz. Iltimos tilni tanlang!
@@ -335,15 +330,12 @@ public class BotService {
             telegramUser.setCounter(telegramUser.getCounter() - 1);
         } else if ( data.equals("basket") ) {
             clearMessages(telegramUser);
-            BotService.basketPage(telegramUser);
             return;
         } else if ( data.equals("back") ) {
             telegramUser.setCounter(0);
             clearMessages(telegramUser);
             BotService.acceptContactShowCategories(telegramUser, null);
             return;
-        } else if ( data.equals(telegramUser.getText("SHOW_BASKET")) ) {
-            BotService.showBasket(telegramUser);
         }
 
         EditMessageReplyMarkup editMessageReplyMarkup = new EditMessageReplyMarkup(
@@ -354,54 +346,10 @@ public class BotService {
         MyBot.telegramBot.execute(editMessageReplyMarkup);
     }
 
-    private static void basketPage(TelegramUser telegramUser) {
-        UUID chosenProductId = telegramUser.getChosenProductId();
-        Product product = findChosenProductByUUID(chosenProductId);
-        telegramUser.orderProducts.add(makeAnOrderProduct(product, telegramUser));
-        telegramUser.setCounter(0);
-    }
-
-    private static OrderProduct makeAnOrderProduct(Product product, TelegramUser telegramUser) {
-        OrderProduct orderProduct = new OrderProduct(product.getId());
-        orderProduct.setAmount(telegramUser.getCounter());
-        return orderProduct;
-    }
-
-    private static Product findChosenProductByUUID(UUID chosenProductId) {
-        for (Product product : DB.PRODUCTS) {
-            if ( product.getId().equals(chosenProductId) ) {
-                return product;
-            }
-        }
-        return null;
-    }
-
     public static void clearMessages(TelegramUser telegramUser) {
         List<Integer> deletedMessagesList = DB.deletedMessages;
         int[] arr = deletedMessagesList.stream().mapToInt(Integer::intValue).toArray();
         DeleteMessages deleteMessages = new DeleteMessages(telegramUser.getChatId(), arr);
         MyBot.telegramBot.execute(deleteMessages);
-    }
-
-    public static void showBasket(TelegramUser telegramUser) {
-        StringBuilder text = new StringBuilder();
-        for (OrderProduct orderProduct : telegramUser.orderProducts) {
-            int amount = orderProduct.getAmount();
-            Product product = findProductById(orderProduct.getOrderId());
-            text.append(product.getName()).append(" ").append(amount).append(" ta\n");
-        }
-
-        SendMessage sendMessage = new SendMessage(telegramUser.getChatId(),
-         telegramUser.getText("YOUR_BASKET") + "\n" + text
-        );
-    }
-
-    private static Product findProductById(UUID orderId) {
-        for (Product product : DB.PRODUCTS) {
-            if ( product.getId().equals(orderId) ) {
-                return product;
-            }
-        }
-        return null;
     }
 }

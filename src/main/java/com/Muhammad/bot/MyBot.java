@@ -39,7 +39,7 @@ public class MyBot {
 
     private void handleUpdate(Update update) {
 
-        // anything user sends is considered to be a message except when they press an inline button(i.e callback query)
+        // anything user sends is considered to be a message except when they press an inline button(i.e. callback query)
         if ( update.message() != null ) {
 
             Message message = update.message();
@@ -66,6 +66,8 @@ public class MyBot {
                     showProducts(text, telegramUser, message);
                 }
 
+
+                // to get contact
             } else if ( message.contact() != null ) {
                 Contact contact = message.contact();
                 if ( telegramUser.checkState(TelegramState.SHARE_CONTACT) ) {
@@ -88,9 +90,7 @@ public class MyBot {
 
         if ( telegramUser.checkState(TelegramState.SELECT_LANG) ) {
             BotService.acceptLanguageAskContact(telegramUser, callbackQuery);
-        } else if ( telegramUser.checkState(TelegramState.ADDED_BASKET) ) {
-
-        } else {
+        } else if ( telegramUser.checkState(TelegramState.EACH_PRODUCT) ) {
             BotService.dealWithEachProduct(telegramUser, callbackQuery);
         }
     }
@@ -121,6 +121,7 @@ public class MyBot {
         telegramUser.setCounter(0);
         DB.deletedMessages.add(message.messageId());
         BotService.clearMessages(telegramUser);
+        telegramUser.setTelegramState(TelegramState.EACH_PRODUCT);
 
         if ( text.equals(telegramUser.getText("JUMPER")) ) {
             BotService.showProductJumper(telegramUser);
@@ -170,26 +171,31 @@ public class MyBot {
         if ( text.equals(telegramUser.getText("HONEY")) ) {
             BotService.showProductHoney(telegramUser);
         }
-
         telegramUser.setChosenProductId(findChosenProductIdByName(text, telegramUser));
-
-        telegramUser.setTelegramState(TelegramState.EACH_PRODUCT);
     }
 
     private UUID findChosenProductIdByName(String text, TelegramUser telegramUser) {
-        boolean lamp = false;
+        boolean switchLanguage = false;
         if ( telegramUser.getLanguage() != Language.EN ) {
             telegramUser.setLanguage(Language.EN);
-            lamp = true;
+            switchLanguage = true;
         }
-        for (Product product : DB.PRODUCTS) {
-            if ( product.getName().equals(telegramUser.getText(text)) ) {
-                return product.getId();
+
+        String targetProductName = telegramUser.getText(text);
+        if ( targetProductName != null ) {
+            targetProductName = targetProductName.toLowerCase();
+
+            for (Product product : DB.PRODUCTS) {
+                if ( product.getName().toLowerCase().equals(targetProductName) ) {
+                    return product.getId();
+                }
             }
         }
-        if ( lamp ) {
+
+        if ( switchLanguage ) {
             telegramUser.setLanguage(Language.UZ);
         }
+
         return null;
     }
 
