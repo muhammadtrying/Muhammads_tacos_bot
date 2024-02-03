@@ -1,30 +1,33 @@
 package com.Muhammad.entity;
 
+import com.Muhammad.db.DB;
 import com.Muhammad.enums.Language;
 import com.Muhammad.enums.TelegramState;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @Builder
 public class TelegramUser {
     private Long chatId;
-    private UUID chosenProductId;
+    private Product chosenProduct;
     private Integer messageId;
     private String firstName;
     private String lastName;
     private String phoneNumber;
     private int counter;
-    public ArrayList<OrderProduct> orderProducts;
+    public Map<Product, Integer> basket;
     private Language language;
     private TelegramState telegramState;
 
     public static void showUsers() {
+        for (Map.Entry<Long, TelegramUser> entry : DB.TELEGRAM_USERS.entrySet()) {
+            TelegramUser user = entry.getValue();
+            System.out.println(user);
+            System.out.println("=====================\n");
+        }
     }
 
     public boolean checkState(TelegramState selectLang) {

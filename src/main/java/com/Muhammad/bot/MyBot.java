@@ -1,9 +1,7 @@
 package com.Muhammad.bot;
 
 import com.Muhammad.db.DB;
-import com.Muhammad.entity.Product;
 import com.Muhammad.entity.TelegramUser;
-import com.Muhammad.enums.Language;
 import com.Muhammad.enums.TelegramState;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
@@ -13,7 +11,6 @@ import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import lombok.SneakyThrows;
 
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,13 +28,19 @@ public class MyBot {
     public void start() {
         telegramBot.setUpdatesListener((updates) -> {
             for (Update update : updates) {
-                CompletableFuture.runAsync(() -> handleUpdate(update), executorService);
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        handleUpdate(update);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, executorService);
             }
             return UpdatesListener.CONFIRMED_UPDATES_ALL;
         });
     }
 
-    private void handleUpdate(Update update) {
+    private void handleUpdate(Update update) throws InterruptedException {
 
         // anything user sends is considered to be a message except when they press an inline button(i.e. callback query)
         if ( update.message() != null ) {
@@ -95,9 +98,11 @@ public class MyBot {
         }
     }
 
-    private void showCategories(String text, TelegramUser telegramUser, Message message) {
+    private void showCategories(String text, TelegramUser telegramUser, Message message) throws InterruptedException {
+
         DB.deletedMessages.add(message.messageId());
         BotService.clearMessages(telegramUser);
+
         if ( text.equals(telegramUser.getText("CLOTHES")) ) {
             BotService.showCategoryClothes(telegramUser);
         }
@@ -110,93 +115,90 @@ public class MyBot {
         if ( text.equals(telegramUser.getText("SNACKS")) ) {
             BotService.showCategorySnacks(telegramUser);
         }
-        if ( text.equals(telegramUser.getText("CHOOSE_LANG")) ) {
-            BotService.acceptStartAskLanguage(message, telegramUser);
-            return;
+        if ( text.equals(telegramUser.getText("SEE_BASKET")) ) {
+            BotService.showBasket(telegramUser);
         }
         telegramUser.setTelegramState(TelegramState.SHOW_PRODUCTS);
+
     }
 
     public void showProducts(String text, TelegramUser telegramUser, Message message) {
+
         telegramUser.setCounter(0);
         DB.deletedMessages.add(message.messageId());
         BotService.clearMessages(telegramUser);
+
         telegramUser.setTelegramState(TelegramState.EACH_PRODUCT);
+        int i = 0;
 
         if ( text.equals(telegramUser.getText("JUMPER")) ) {
             BotService.showProductJumper(telegramUser);
         }
         if ( text.equals(telegramUser.getText("T-SHIRT")) ) {
             BotService.showProductTshirt(telegramUser);
+            i = 1;
         }
         if ( text.equals(telegramUser.getText("TROUSERS")) ) {
             BotService.showProductTrousers(telegramUser);
+            i = 2;
         }
         if ( text.equals(telegramUser.getText("AIR_JORDANS")) ) {
             BotService.showProductAirJordans(telegramUser);
+            i = 3;
         }
         if ( text.equals(telegramUser.getText("BANANA")) ) {
             BotService.showProductBanana(telegramUser);
+            i = 4;
         }
         if ( text.equals(telegramUser.getText("APPLES")) ) {
             BotService.showProductApples(telegramUser);
+            i = 5;
         }
         if ( text.equals(telegramUser.getText("MEAT")) ) {
             BotService.showProductMeat(telegramUser);
+            i = 6;
         }
         if ( text.equals(telegramUser.getText("WATERMELON")) ) {
             BotService.showProductWatermelon(telegramUser);
+            i = 7;
         }
-        if ( text.equals(telegramUser.getText("COKE")) ) {
+        if ( text.equals(telegramUser.getText("CAKE")) ) {
             BotService.showProductCoke(telegramUser);
+            i = 8;
         }
         if ( text.equals(telegramUser.getText("PEPSI")) ) {
             BotService.showProductPepsi(telegramUser);
+            i = 9;
         }
         if ( text.equals(telegramUser.getText("WATER")) ) {
             BotService.showProductWater(telegramUser);
+            i = 10;
         }
         if ( text.equals(telegramUser.getText("SPRITE")) ) {
             BotService.showProductSprite(telegramUser);
+            i = 11;
         }
-        if ( text.equals(telegramUser.getText("CAKE")) ) {
+        if ( text.equals(telegramUser.getText("COKE")) ) {
             BotService.showProductCake(telegramUser);
+            i = 12;
         }
         if ( text.equals(telegramUser.getText("CHOCOLATE")) ) {
             BotService.showProductChocolate(telegramUser);
+            i = 13;
         }
         if ( text.equals(telegramUser.getText("ICE_CREAM")) ) {
             BotService.showProductIceCream(telegramUser);
+            i = 14;
         }
         if ( text.equals(telegramUser.getText("HONEY")) ) {
             BotService.showProductHoney(telegramUser);
+            i = 15;
         }
-        telegramUser.setChosenProductId(findChosenProductIdByName(text, telegramUser));
-    }
-
-    private UUID findChosenProductIdByName(String text, TelegramUser telegramUser) {
-        boolean switchLanguage = false;
-        if ( telegramUser.getLanguage() != Language.EN ) {
-            telegramUser.setLanguage(Language.EN);
-            switchLanguage = true;
+        if ( text.equals(telegramUser.getText("SEE_BASKET")) ) {
+            System.out.println("Basket if ishladi");
+            BotService.showBasket(telegramUser);
         }
-
-        String targetProductName = telegramUser.getText(text);
-        if ( targetProductName != null ) {
-            targetProductName = targetProductName.toLowerCase();
-
-            for (Product product : DB.PRODUCTS) {
-                if ( product.getName().toLowerCase().equals(targetProductName) ) {
-                    return product.getId();
-                }
-            }
-        }
-
-        if ( switchLanguage ) {
-            telegramUser.setLanguage(Language.UZ);
-        }
-
-        return null;
+        telegramUser.setChosenProduct(DB.PRODUCTS.get(i));
     }
 
 
@@ -206,7 +208,6 @@ public class MyBot {
         else {
             TelegramUser newUser = TelegramUser.builder()
              .chatId(chatId)
-             .telegramState(TelegramState.START)
              .build();
             DB.TELEGRAM_USERS.put(chatId, newUser);
             return newUser;
