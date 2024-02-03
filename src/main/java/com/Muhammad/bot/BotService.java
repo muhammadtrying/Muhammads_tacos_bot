@@ -1,5 +1,8 @@
 package com.Muhammad.bot;
 
+import com.Muhammad.db.DB;
+import com.Muhammad.entity.OrderProduct;
+import com.Muhammad.entity.Product;
 import com.Muhammad.entity.TelegramUser;
 import com.Muhammad.enums.Language;
 import com.Muhammad.enums.TelegramState;
@@ -8,14 +11,19 @@ import com.pengrad.telegrambot.model.Contact;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardRemove;
+import com.pengrad.telegrambot.request.DeleteMessages;
 import com.pengrad.telegrambot.request.EditMessageReplyMarkup;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SendPhoto;
 import com.pengrad.telegrambot.response.SendResponse;
 
 import java.io.File;
+import java.util.List;
+import java.util.UUID;
 
 public class BotService {
+    public static MyBot myBot = new MyBot();
+
     public static void acceptStartAskLanguage(Message message, TelegramUser telegramUser) {
         SendMessage sendMessage = new SendMessage(message.chat().id(), """
          Assalomu aleykum. Botga hush kelibsiz. Iltimos tilni tanlang!
@@ -24,8 +32,8 @@ public class BotService {
          """);
 
         sendMessage.replyMarkup(BotUtils.generateLangBtns());
-        MyBot.telegramBot.execute(sendMessage);
-
+        SendResponse response = MyBot.telegramBot.execute(sendMessage);
+        DB.deletedMessages.add(response.message().messageId());
         telegramUser.setTelegramState(TelegramState.SELECT_LANG);
     }
 
@@ -39,10 +47,10 @@ public class BotService {
 
         SendMessage sendMessage = new SendMessage(callbackQuery.from().id(), telegramUser.getText("ASK_CONTACT").formatted(getFullName(telegramUser)));
 
-        // add this message id to the array to be able to delete it later
 
         sendMessage.replyMarkup(BotUtils.generateContactBtns(telegramUser));
-        MyBot.telegramBot.execute(sendMessage);
+        SendResponse response = MyBot.telegramBot.execute(sendMessage);
+        DB.deletedMessages.add(response.message().messageId());
 
         //changing the state
         telegramUser.setTelegramState(TelegramState.SHARE_CONTACT);
@@ -60,14 +68,15 @@ public class BotService {
     }
 
     public static void acceptContactShowCategories(TelegramUser telegramUser, Contact contact) {
-        telegramUser.setPhoneNumber(contact.phoneNumber());
-
+        clearMessages(telegramUser);
+        if ( contact != null ) {
+            telegramUser.setPhoneNumber(contact.phoneNumber());
+        }
         SendMessage sendMessage = new SendMessage(telegramUser.getChatId(), telegramUser.getText("CHOOSE_CATEGORY"));
-        sendMessage.replyMarkup(new ReplyKeyboardRemove());
 
         sendMessage.replyMarkup(BotUtils.generateCategoryButton(telegramUser));
-        MyBot.telegramBot.execute(sendMessage);
-
+        SendResponse response = MyBot.telegramBot.execute(sendMessage);
+        DB.deletedMessages.add(response.message().messageId());
         telegramUser.setTelegramState(TelegramState.SHOW_CATEGORIES);
     }
 
@@ -123,11 +132,14 @@ public class BotService {
          telegramUser.getChatId(),
          new File("src/main/java/com/Muhammad/photos/jumper.png")
         );
+
+        sendPhoto.replyMarkup(new ReplyKeyboardRemove());
         sendPhoto.caption(telegramUser.getText("JUMPER") + " 100,000 sum");
+        sendPhoto.replyMarkup(new ReplyKeyboardRemove());
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
-
     }
 
     public static void showProductTshirt(TelegramUser telegramUser) {
@@ -138,6 +150,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("T-SHIRT") + " 80,000  sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -150,6 +163,7 @@ public class BotService {
 
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -161,6 +175,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("AIR_JORDANS") + " 300,000 sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -172,6 +187,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("BANANA") + " 20,000 sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -183,6 +199,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("APPLES") + " 30,000 sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -194,6 +211,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("MEAT") + " 100,000 sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -205,6 +223,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("WATERMELON") + " 15,000 sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -216,6 +235,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("CAKE") + " 60,000 sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -227,6 +247,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("PEPSI") + " 15,000 sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -238,6 +259,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("WATER") + " 7,000 sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -249,6 +271,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("SPRITE") + " 12,000 sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -260,6 +283,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("COKE") + " 12,000 sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -271,6 +295,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("CHOCOLATE") + " 30,000 sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -282,6 +307,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("ICE_CREAM") + " 10,000 sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -293,6 +319,7 @@ public class BotService {
         sendPhoto.caption(telegramUser.getText("HONEY") + " 70,000 sum");
         sendPhoto.replyMarkup(BotUtils.generateCounter(telegramUser));
         SendResponse execute = MyBot.telegramBot.execute(sendPhoto);
+        DB.deletedMessages.add(execute.message().messageId());
         telegramUser.setMessageId(execute.message().messageId());
     }
 
@@ -300,10 +327,19 @@ public class BotService {
         String data = callbackQuery.data();
         if ( data.equals("plus") ) {
             telegramUser.setCounter(telegramUser.getCounter() + 1);
-        } else if ( data.equals("minus") ) {
+        } else if ( data.equals("minus") && telegramUser.getCounter() > 0 ) {
             telegramUser.setCounter(telegramUser.getCounter() - 1);
         } else if ( data.equals("basket") ) {
-            // show basket
+            clearMessages(telegramUser);
+            BotService.basketPage(telegramUser);
+            return;
+        } else if ( data.equals("back") ) {
+            telegramUser.setCounter(0);
+            clearMessages(telegramUser);
+            BotService.acceptContactShowCategories(telegramUser, null);
+            return;
+        } else if ( data.equals(telegramUser.getText("SHOW_BASKET")) ) {
+            BotService.showBasket(telegramUser);
         }
 
         EditMessageReplyMarkup editMessageReplyMarkup = new EditMessageReplyMarkup(
@@ -312,5 +348,56 @@ public class BotService {
 
         editMessageReplyMarkup.replyMarkup((InlineKeyboardMarkup) BotUtils.generateCounter(telegramUser));
         MyBot.telegramBot.execute(editMessageReplyMarkup);
+    }
+
+    private static void basketPage(TelegramUser telegramUser) {
+        UUID chosenProductId = telegramUser.getChosenProductId();
+        Product product = findChosenProductByUUID(chosenProductId);
+        telegramUser.orderProducts.add(makeAnOrderProduct(product, telegramUser));
+        telegramUser.setCounter(0);
+    }
+
+    private static OrderProduct makeAnOrderProduct(Product product, TelegramUser telegramUser) {
+        OrderProduct orderProduct = new OrderProduct(product.getId());
+        orderProduct.setAmount(telegramUser.getCounter());
+        return orderProduct;
+    }
+
+    private static Product findChosenProductByUUID(UUID chosenProductId) {
+        for (Product product : DB.PRODUCTS) {
+            if ( product.getId().equals(chosenProductId) ) {
+                return product;
+            }
+        }
+        return null;
+    }
+
+    public static void clearMessages(TelegramUser telegramUser) {
+        List<Integer> deletedMessagesList = DB.deletedMessages;
+        int[] arr = deletedMessagesList.stream().mapToInt(Integer::intValue).toArray();
+        DeleteMessages deleteMessages = new DeleteMessages(telegramUser.getChatId(), arr);
+        MyBot.telegramBot.execute(deleteMessages);
+    }
+
+    public static void showBasket(TelegramUser telegramUser) {
+        StringBuilder text = new StringBuilder();
+        for (OrderProduct orderProduct : telegramUser.orderProducts) {
+            int amount = orderProduct.getAmount();
+            Product product = findProductById(orderProduct.getOrderId());
+            text.append(product.getName()).append(" ").append(amount).append(" ta\n");
+        }
+
+        SendMessage sendMessage = new SendMessage(telegramUser.getChatId(),
+         telegramUser.getText("YOUR_BASKET") + "\n" + text
+        );
+    }
+
+    private static Product findProductById(UUID orderId) {
+        for (Product product : DB.PRODUCTS) {
+            if ( product.getId().equals(orderId) ) {
+                return product;
+            }
+        }
+        return null;
     }
 }

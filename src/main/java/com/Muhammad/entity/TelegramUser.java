@@ -5,18 +5,22 @@ import com.Muhammad.enums.TelegramState;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.UUID;
 
 @Data
 @Builder
 public class TelegramUser {
     private Long chatId;
+    private UUID chosenProductId;
     private Integer messageId;
     private String firstName;
     private String lastName;
     private String phoneNumber;
-    private Integer counter = 0;
+    private int counter;
+    public ArrayList<OrderProduct> orderProducts;
     private Language language;
     private TelegramState telegramState;
 
