@@ -11,6 +11,7 @@ import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import lombok.SneakyThrows;
 
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -87,6 +88,7 @@ public class MyBot {
     }
 
     private void workWithQueries(Update update) {
+
         CallbackQuery callbackQuery = update.callbackQuery();
         Long chatId = callbackQuery.from().id();
         TelegramUser telegramUser = getUser(chatId);
@@ -95,10 +97,20 @@ public class MyBot {
             BotService.acceptLanguageAskContact(telegramUser, callbackQuery);
         } else if ( telegramUser.checkState(TelegramState.EACH_PRODUCT) ) {
             BotService.dealWithEachProduct(telegramUser, callbackQuery);
+        } else if ( update.callbackQuery().data().equals("order") ) {
+            BotService.order(telegramUser);
+            BotService.acceptContactShowCategories(telegramUser, null);
+        } else if ( update.callbackQuery().data().equals("cancel") ) {
+            System.out.println("kirdi");
+            telegramUser.basket = new HashMap<>();
+            BotService.clearMessages(telegramUser);
+            BotService.acceptContactShowCategories(telegramUser, null);
+        } else if ( update.callbackQuery().data().equals("back") ) {
+            BotService.acceptContactShowCategories(telegramUser, null);
         }
     }
 
-    private void showCategories(String text, TelegramUser telegramUser, Message message) throws InterruptedException {
+    public static void showCategories(String text, TelegramUser telegramUser, Message message) {
 
         DB.deletedMessages.add(message.messageId());
         BotService.clearMessages(telegramUser);
@@ -117,9 +129,13 @@ public class MyBot {
         }
         if ( text.equals(telegramUser.getText("SEE_BASKET")) ) {
             BotService.showBasket(telegramUser);
+            return;
+        }
+        if ( text.equals(telegramUser.getText("MY_ORDERS")) ) {
+            BotService.showMyOrders(telegramUser);
+            return;
         }
         telegramUser.setTelegramState(TelegramState.SHOW_PRODUCTS);
-
     }
 
     public void showProducts(String text, TelegramUser telegramUser, Message message) {
@@ -163,7 +179,7 @@ public class MyBot {
             i = 7;
         }
         if ( text.equals(telegramUser.getText("CAKE")) ) {
-            BotService.showProductCoke(telegramUser);
+            BotService.showProductCake(telegramUser);
             i = 8;
         }
         if ( text.equals(telegramUser.getText("PEPSI")) ) {
@@ -179,7 +195,7 @@ public class MyBot {
             i = 11;
         }
         if ( text.equals(telegramUser.getText("COKE")) ) {
-            BotService.showProductCake(telegramUser);
+            BotService.showProductCoke(telegramUser);
             i = 12;
         }
         if ( text.equals(telegramUser.getText("CHOCOLATE")) ) {
@@ -195,12 +211,10 @@ public class MyBot {
             i = 15;
         }
         if ( text.equals(telegramUser.getText("SEE_BASKET")) ) {
-            System.out.println("Basket if ishladi");
             BotService.showBasket(telegramUser);
         }
         telegramUser.setChosenProduct(DB.PRODUCTS.get(i));
     }
-
 
     private TelegramUser getUser(Long chatId) {
         TelegramUser searchedUser = DB.TELEGRAM_USERS.getOrDefault(chatId, null);

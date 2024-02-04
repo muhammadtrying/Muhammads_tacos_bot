@@ -1,13 +1,9 @@
 package com.Muhammad.bot;
 
-import com.Muhammad.entity.Product;
 import com.Muhammad.entity.TelegramUser;
 import com.Muhammad.enums.Language;
 import com.pengrad.telegrambot.model.request.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public class BotUtils {
     public static Keyboard generateLangBtns() {
@@ -38,7 +34,7 @@ public class BotUtils {
           telegramUser.getText("DRINKS"), telegramUser.getText("SNACKS")
          },
          new String[]{
-          telegramUser.getText("SEE_BASKET")
+          telegramUser.getText("SEE_BASKET"), telegramUser.getText("MY_ORDERS")
          }
         );
 
@@ -128,7 +124,7 @@ public class BotUtils {
 
     public static Keyboard generateCancelButton(TelegramUser telegramUser) {
         return new InlineKeyboardMarkup(
-         new InlineKeyboardButton(telegramUser.getText("CANCEL")));
+         new InlineKeyboardButton(telegramUser.getText("CANCEL")).callbackData("cancel"),
+         new InlineKeyboardButton(telegramUser.getText("ORDER")).callbackData("order"));
     }
 }
-

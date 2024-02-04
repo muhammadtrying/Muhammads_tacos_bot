@@ -1,5 +1,7 @@
 package com.Muhammad.db;
 
+import com.Muhammad.entity.Order;
+import com.Muhammad.entity.OrderProduct;
 import com.Muhammad.entity.Product;
 import com.Muhammad.entity.TelegramUser;
 
@@ -9,6 +11,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public interface DB {
+    List<Order> ORDERS = new ArrayList<>();
+    List<OrderProduct> ORDER_PRODUCT = new ArrayList<>();
     ConcurrentHashMap<Long, TelegramUser> TELEGRAM_USERS = new ConcurrentHashMap<>();
     ArrayList<Product> PRODUCTS = new ArrayList<>(Arrays.asList(
 

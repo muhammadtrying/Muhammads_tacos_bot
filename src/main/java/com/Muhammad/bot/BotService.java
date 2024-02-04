@@ -1,9 +1,12 @@
 package com.Muhammad.bot;
 
 import com.Muhammad.db.DB;
+import com.Muhammad.entity.Order;
+import com.Muhammad.entity.OrderProduct;
 import com.Muhammad.entity.Product;
 import com.Muhammad.entity.TelegramUser;
 import com.Muhammad.enums.Language;
+import com.Muhammad.enums.OrderStatus;
 import com.Muhammad.enums.TelegramState;
 import com.pengrad.telegrambot.model.CallbackQuery;
 import com.pengrad.telegrambot.model.Contact;
@@ -19,6 +22,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class BotService {
     public static void acceptStartAskLanguage(Message message, TelegramUser telegramUser) {
@@ -70,7 +74,6 @@ public class BotService {
             telegramUser.setPhoneNumber(contact.phoneNumber());
         }
         SendMessage sendMessage = new SendMessage(telegramUser.getChatId(), telegramUser.getText("CHOOSE_CATEGORY"));
-
         sendMessage.replyMarkup(BotUtils.generateCategoryButton(telegramUser));
         SendResponse response = MyBot.telegramBot.execute(sendMessage);
         DB.deletedMessages.add(response.message().messageId());
@@ -310,21 +313,68 @@ public class BotService {
         MyBot.telegramBot.execute(deleteMessages);
     }
 
-        public static void showBasket(TelegramUser telegramUser) {
-
-        for (Map.Entry<Product, Integer> entry : telegramUser.basket.entrySet()) {
-            Product product = entry.getKey();
-            Integer amount = entry.getValue();
-
-            String message = product.getName() + " x " + amount + "  [" + product.getPrice() * amount + " sum]";
-
-            SendMessage sendMessage = new SendMessage(telegramUser.getChatId(), message);
-
-            sendMessage.replyMarkup(   BotUtils.generateCancelButton(telegramUser)  );
-
-            MyBot.telegramBot.execute(sendMessage);
+    public static void showBasket(TelegramUser telegramUser) {
+        if ( telegramUser.basket != null ) {
+            StringBuilder message = new StringBuilder();
+            for (Map.Entry<Product, Integer> entry : telegramUser.basket.entrySet()) {
+                Product product = entry.getKey();
+                Integer amount = entry.getValue();
+                message.append(product.getName()).append(" x ").append(amount).append("  [").append(product.getPrice() * amount).append(" sum]\n\n");
+            }
+            SendMessage sendMessage = new SendMessage(telegramUser.getChatId(), message.toString());
+            sendMessage.replyMarkup(BotUtils.generateCancelButton(telegramUser));
+            SendResponse execute = MyBot.telegramBot.execute(sendMessage);
+            DB.deletedMessages.add(execute.message().messageId());
         }
     }
 
 
+    public static void order(TelegramUser telegramUser) {
+        Order order = new Order();
+        for (Map.Entry<Product, Integer> entry : telegramUser.basket.entrySet()) {
+            Integer amount = entry.getValue();
+            Product product = entry.getKey();
+
+            OrderProduct orderProduct = new OrderProduct(
+             order.getId(),
+             product.getId(),
+             amount);
+
+            DB.ORDER_PRODUCT.add(orderProduct);
+        }
+
+        order.setUserId(telegramUser.getChatId());
+
+        DB.ORDERS.add(order);
+
+        telegramUser.basket.clear();
+    }
+
+    public static void showMyOrders(TelegramUser telegramUser) {
+        int i = 1;
+        int sum = 0;
+        StringBuilder str = new StringBuilder();
+        for (OrderProduct orderProduct : DB.ORDER_PRODUCT) {
+            for (Order order : DB.ORDERS) {
+                if ( order.getUserId().equals(telegramUser.getChatId()) && orderProduct.getOrderId().equals(order.getId()) ) {
+                    Product product = findProductById(orderProduct.getProductId());
+                    sum += product.getPrice() * orderProduct.getAmount();
+                    str.append(i++).append(". ").append(product.getName()).append(" ").append(product.getPrice()).append(" sum").append(" x ").append(orderProduct.getAmount()).append(" ta\n");
+                }
+            }
+        }
+        str.append("\n jami: " + sum + " sum");
+
+        SendMessage sendMessage = new SendMessage(telegramUser.getChatId(), str.toString());
+        sendMessage.replyMarkup(new InlineKeyboardMarkup(new InlineKeyboardButton(telegramUser.getText("BACK")).callbackData("back")));
+        SendResponse execute = MyBot.telegramBot.execute(sendMessage);
+        DB.deletedMessages.add(execute.message().messageId());
+    }
+
+    private static Product findProductById(UUID productId) {
+        for (Product product : DB.PRODUCTS) {
+            if ( product.getId().equals(productId) ) return product;
+        }
+        return null;
+    }
 }
