@@ -10,8 +10,8 @@ import java.util.UUID;
 public class Order {
     private final UUID id = UUID.randomUUID();
     private Long userId;
-    private OrderStatus orderStatus = OrderStatus.STARTED;
-    private LocalDateTime localDateTime = LocalDateTime.now();
+    private  OrderStatus orderStatus = OrderStatus.STARTED;
+    private final LocalDateTime localDateTime = LocalDateTime.now();
 
 
     public LocalDateTime getLocalDateTime() {
@@ -30,15 +30,7 @@ public class Order {
         this.userId = userId;
     }
 
-    public void setLocalDateTime(LocalDateTime localDateTime) {
-        this.localDateTime = localDateTime;
-    }
-
     public static void showOrders() {
 
-    }
-
-    public void setOrderStatus(OrderStatus orderStatus) {
-        this.orderStatus = orderStatus;
     }
 }

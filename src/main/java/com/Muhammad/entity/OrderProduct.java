@@ -1,13 +1,10 @@
 package com.Muhammad.entity;
 
-import lombok.Builder;
-import lombok.Data;
 
 import java.util.UUID;
 
 
 public class OrderProduct {
-    private final UUID id = UUID.randomUUID();
     private final UUID orderId;
     private final UUID productId;
     private final int amount;

@@ -6,7 +6,6 @@ import com.Muhammad.entity.OrderProduct;
 import com.Muhammad.entity.Product;
 import com.Muhammad.entity.TelegramUser;
 import com.Muhammad.enums.Language;
-import com.Muhammad.enums.OrderStatus;
 import com.Muhammad.enums.TelegramState;
 import com.pengrad.telegrambot.model.CallbackQuery;
 import com.pengrad.telegrambot.model.Contact;
@@ -19,10 +18,8 @@ import com.pengrad.telegrambot.request.SendPhoto;
 import com.pengrad.telegrambot.response.SendResponse;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class BotService {
     public static void acceptStartAskLanguage(Message message, TelegramUser telegramUser) {
@@ -354,16 +351,20 @@ public class BotService {
         int i = 1;
         int sum = 0;
         StringBuilder str = new StringBuilder();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String time;
         for (OrderProduct orderProduct : DB.ORDER_PRODUCT) {
             for (Order order : DB.ORDERS) {
                 if ( order.getUserId().equals(telegramUser.getChatId()) && orderProduct.getOrderId().equals(order.getId()) ) {
                     Product product = findProductById(orderProduct.getProductId());
+                    assert product != null;
+                    time = order.getLocalDateTime().format(formatter);
                     sum += product.getPrice() * orderProduct.getAmount();
-                    str.append(i++).append(". ").append(product.getName()).append(" ").append(product.getPrice()).append(" sum").append(" x ").append(orderProduct.getAmount()).append(" ta\n");
+                    str.append(i++).append(". ").append(product.getName()).append(" ").append(product.getPrice()).append(" sum").append(" x ").append(orderProduct.getAmount()).append(" ta\n").append(time).append("\n");
                 }
             }
         }
-        str.append("\n jami: " + sum + " sum");
+        str.append("\n jami: ").append(sum).append(" sum\n");
 
         SendMessage sendMessage = new SendMessage(telegramUser.getChatId(), str.toString());
         sendMessage.replyMarkup(new InlineKeyboardMarkup(new InlineKeyboardButton(telegramUser.getText("BACK")).callbackData("back")));
