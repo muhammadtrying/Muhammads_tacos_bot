@@ -224,6 +224,7 @@ public class MyBot {
              .chatId(chatId)
              .build();
             DB.TELEGRAM_USERS.put(chatId, newUser);
+            DB.uploadUsers(DB.TELEGRAM_USERS);
             return newUser;
         }
     }

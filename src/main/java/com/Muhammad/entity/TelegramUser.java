@@ -6,11 +6,12 @@ import com.Muhammad.enums.TelegramState;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.*;
 
 @Data
 @Builder
-public class TelegramUser {
+public class TelegramUser implements Serializable {
     private Long chatId;
     private Product chosenProduct;
     private Integer messageId;

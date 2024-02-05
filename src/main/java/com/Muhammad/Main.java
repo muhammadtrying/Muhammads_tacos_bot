@@ -1,6 +1,7 @@
 package com.Muhammad;
 
 import com.Muhammad.bot.MyBot;
+import com.Muhammad.db.DB;
 import com.Muhammad.entity.Order;
 import com.Muhammad.entity.TelegramUser;
 
@@ -8,6 +9,9 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
+
+        DB.TELEGRAM_USERS.putAll(DB.loadUsers());
+        DB.ORDERS.addAll(DB.loadOrders());
         // starting the bot
         MyBot myBot = new MyBot();
         myBot.start();

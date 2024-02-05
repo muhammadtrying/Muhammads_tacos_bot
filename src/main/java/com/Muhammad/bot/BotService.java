@@ -343,7 +343,7 @@ public class BotService {
         order.setUserId(telegramUser.getChatId());
 
         DB.ORDERS.add(order);
-
+        DB.uploadOrders(DB.ORDERS);
         telegramUser.basket.clear();
     }
 

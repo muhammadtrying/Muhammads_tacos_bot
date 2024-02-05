@@ -3,14 +3,15 @@ package com.Muhammad.entity;
 
 import com.Muhammad.enums.OrderStatus;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 
-public class Order {
+public class Order implements Serializable {
     private final UUID id = UUID.randomUUID();
     private Long userId;
-    private  OrderStatus orderStatus = OrderStatus.STARTED;
+    private OrderStatus orderStatus = OrderStatus.STARTED;
     private final LocalDateTime localDateTime = LocalDateTime.now();
 
 
@@ -31,6 +32,6 @@ public class Order {
     }
 
     public static void showOrders() {
-
+       //
     }
 }
