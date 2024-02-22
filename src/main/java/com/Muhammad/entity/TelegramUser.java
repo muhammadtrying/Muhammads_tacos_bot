@@ -39,6 +39,7 @@ public class TelegramUser implements Serializable {
 
         ResourceBundle resourceBundle = ResourceBundle.getBundle(
          "message", Locale.forLanguageTag(language.toString()));
+
         return resourceBundle.getString(txt);
     }
 }

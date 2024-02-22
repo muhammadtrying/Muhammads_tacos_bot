@@ -26,7 +26,7 @@ public class BotService {
         SendMessage sendMessage = new SendMessage(message.chat().id(), """
          Assalomu aleykum. Botga hush kelibsiz. Iltimos tilni tanlang!
                    
-         Hi, welcome to the bot. Pleas select language to continue!
+         Hi, welcome to the bot. Please select language to continue!
          """);
 
         sendMessage.replyMarkup(BotUtils.generateLangBtns());
@@ -60,7 +60,7 @@ public class BotService {
             name += telegramUser.getFirstName();
         }
         if ( telegramUser.getLastName() != null ) {
-            name += " " + telegramUser.getLastName();
+            name += telegramUser.getLastName();
         }
         return name;
     }
@@ -306,6 +306,7 @@ public class BotService {
     public static void clearMessages(TelegramUser telegramUser) {
         List<Integer> deletedMessagesList = DB.deletedMessages;
         int[] arr = deletedMessagesList.stream().mapToInt(Integer::intValue).toArray();
+
         DeleteMessages deleteMessages = new DeleteMessages(telegramUser.getChatId(), arr);
         MyBot.telegramBot.execute(deleteMessages);
     }

@@ -11,7 +11,7 @@ import java.util.UUID;
 public class Order implements Serializable {
     private final UUID id = UUID.randomUUID();
     private Long userId;
-    private OrderStatus orderStatus = OrderStatus.STARTED;
+    private final OrderStatus orderStatus = OrderStatus.STARTED;
     private final LocalDateTime localDateTime = LocalDateTime.now();
 
 
@@ -32,6 +32,6 @@ public class Order implements Serializable {
     }
 
     public static void showOrders() {
-       //
+        // showing orders
     }
 }

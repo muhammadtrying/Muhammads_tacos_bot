@@ -26,7 +26,7 @@ public interface DB {
     static void uploadUsers(Map<Long, TelegramUser> users) {
         try (FileOutputStream fileOutputStream = new FileOutputStream(PATH_OF_USERS); ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
             objectOutputStream.writeObject(users);
-        } catch (IOException e) {
+        } catch (IOException ignored) {
 
         }
     }
@@ -34,7 +34,7 @@ public interface DB {
     static void uploadOrders(List<Order> orders) {
         try (FileOutputStream fileOutputStream = new FileOutputStream(PATH_OF_ORDERS); ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
             objectOutputStream.writeObject(orders);
-        } catch (IOException e) {
+        } catch (IOException ignored) {
 
         }
     }

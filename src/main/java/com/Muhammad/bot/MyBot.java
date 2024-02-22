@@ -79,10 +79,12 @@ public class MyBot {
                     BotService.acceptContactShowCategories(telegramUser, contact);
                 }
             }
-
-
             // when pressed a button, this statement works. For instance + button in delivery bots
-        } else if ( update.callbackQuery() != null ) {
+        }
+
+
+        // when inline button is pressed
+        else if ( update.callbackQuery() != null ) {
             workWithQueries(update);
         }
     }
